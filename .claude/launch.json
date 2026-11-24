@@ -1,0 +1,33 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "waldhaus-site",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "site",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "3100"
+      ],
+      "port": 3100
+    },
+    {
+      "name": "waldhaus-ref",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "--prefix",
+        "Ref",
+        "run",
+        "dev",
+        "--",
+        "--port",
+        "3200"
+      ],
+      "port": 3200
+    }
+  ]
+}

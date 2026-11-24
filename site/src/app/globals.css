@@ -1,0 +1,1647 @@
+@import "tailwindcss";
+
+/*
+ * Waldhaus am See: design tokens and craft layer.
+ * The original @theme block (16 colours, three families) is unchanged. Everything in the
+ * elevation is additive and token driven: see docs/design/elevation-spec.md.
+ */
+
+@theme {
+  --color-ink: #0a1c17;
+  --color-forest: #0f2e27;
+  --color-pine: #16423a;
+  --color-emerald: #1f5a4c;
+  --color-sage: #a8c1b4;
+  --color-mist: #d7e2db;
+  --color-cream: #f4ede0;
+  --color-parchment: #ebe1ce;
+  --color-linen: #faf6ee;
+  --color-gold: #c49a5a;
+  --color-gold-light: #e4c68f;
+  --color-gold-deep: #9c7338;
+  --color-copper: #b5773f;
+  --color-burgundy: #2e0a15;
+  --color-wine: #5a1427;
+  --color-claret: #7a1c35;
+
+  --font-display: var(--font-marcellus), "Optima", serif;
+  --font-serif: var(--font-cormorant), "Garamond", serif;
+  --font-sans: var(--font-jost), "Futura", system-ui, sans-serif;
+
+  --animate-slow-zoom: slow-zoom var(--dur-kenburns) ease-out forwards;
+}
+
+/* ——— Utility-generating tokens (additive; the 16 originals are untouched) ——— */
+@theme static {
+  --color-gold-ink: #86612c; /* gold text <24px on light: 4.80:1 cream, 5.18:1 linen */
+  --color-gold-seal: #d4b079; /* migrated from <Seal> */
+  --color-foil-highlight: #f1dcae; /* migrated from .foil stop */
+  --color-foil-glint: #e9cf9c; /* migrated from .foil-bg stop */
+  --color-foil-shadow: color-mix(in oklab, var(--color-gold-deep) 70%, var(--color-ink));
+  --color-ink-muted: color-mix(in oklab, var(--color-ink) 66%, transparent); /* ≥5.1:1 on cream */
+  --color-cream-muted: color-mix(in oklab, var(--color-cream) 62%, transparent); /* ≥5.4:1 on forest */
+  --color-rule-ink: color-mix(in oklab, var(--color-ink) 15%, transparent);
+  --color-rule-ink-strong: color-mix(in oklab, var(--color-ink) 32%, transparent);
+  --color-rule-gold: color-mix(in oklab, var(--color-gold) 25%, transparent);
+  --color-rule-gold-strong: color-mix(in oklab, var(--color-gold) 50%, transparent);
+  --color-rule-cream: color-mix(in oklab, var(--color-cream) 16%, transparent);
+  --color-error-on-dark: #e7a3ae; /* claret family, 7.1:1 on forest */
+
+  /* new type roles (existing roles untouched) */
+  --text-caption: 0.6rem;
+  --text-chapter: 0.95rem;
+  --text-numeral: clamp(2rem, 3.2vw, 2.6rem);
+  --text-numeral--line-height: 1;
+  --text-numeral-xl: clamp(6rem, 10vw, 9rem);
+  --text-numeral-xl--line-height: 0.85;
+  --text-colossal: clamp(9rem, 28vw, 26rem);
+  --text-colossal--line-height: 0.78;
+
+  /* easing */
+  --ease-silk: cubic-bezier(0.2, 0.7, 0.1, 1); /* the original reveal curve, named */
+  --ease-settle: cubic-bezier(0.16, 1, 0.3, 1); /* long weighted landing: lines, frames */
+  --ease-curtain: cubic-bezier(0.76, 0, 0.24, 1); /* symmetrical wipes, curtains, sheen */
+  --ease-exit: cubic-bezier(0.4, 0, 1, 1); /* departures */
+
+  /* depth */
+  --shadow-plate: 0 1px 0 color-mix(in oklab, var(--color-ink) 6%, transparent),
+    0 30px 80px -30px color-mix(in oklab, var(--color-ink) 35%, transparent);
+  --shadow-mount: 0 24px 50px -28px color-mix(in oklab, var(--color-ink) 45%, transparent);
+  --shadow-press: inset 0 1px 0 color-mix(in oklab, var(--color-foil-highlight) 55%, transparent),
+    inset 0 -1px 0 color-mix(in oklab, var(--color-foil-shadow) 50%, transparent);
+  --shadow-press-deep: inset 0 2px 3px color-mix(in oklab, var(--color-foil-shadow) 45%, transparent);
+
+  /* layout */
+  --container-wide: 1440px;
+  --container-content: 1320px;
+}
+
+/* ——— Non-utility tokens ——— */
+:root {
+  /* one light source for foil, sheen, hatching and deboss */
+  --light-angle: 115deg;
+
+  /* hairlines & craft geometry */
+  --hairline: 1px;
+  --hairline-fine: 0.5px;
+  --frame-inset: clamp(0.75rem, 1.6vw, 1.5rem);
+  --hero-frame-inset: calc(var(--frame-inset) + 5.75rem) var(--frame-inset) var(--frame-inset); /* heroes: the plate frame starts below the header */
+  --frame-gap: 6px;
+  --frame-corner: 22px;
+  --frame-tick: 14px;
+  --plate-mount: 10px;
+  --notch: 10px;
+  --leader-gap: 6px;
+  --leader-dot: 0.7px;
+  --arrow-length: 28px;
+  --arrow-reach: 12px;
+  --arrow-head: 7px;
+  --lozenge-xs: 6px;
+  --lozenge-sm: 8px;
+  --lozenge-md: 12px;
+  --lozenge-nav: 4px;
+  --badge-sm: 8rem;
+  --badge-md: 11rem;
+  --badge-lg: 13rem;
+  --badge-mid: calc((var(--badge-sm) + var(--badge-md)) / 2); /* where a full md row cannot fit its column */
+  --hit: 44px;
+  --engrave-line: 0.9px; /* contour strokes, constant on screen */
+  --engrave-fine: 0.6px;
+
+  /* durations */
+  --dur-quick: 250ms;
+  --dur-hover: 500ms;
+  --dur-base: 700ms;
+  --dur-reveal: 1100ms;
+  --dur-line: 1100ms;
+  --dur-curtain: 1400ms;
+  --dur-draw: 1600ms;
+  --dur-sheen: 1400ms;
+  --dur-stamp: 700ms;
+  --dur-count: 2400ms;
+  --dur-zoom: 1600ms;
+  --dur-candle: 2800ms;
+  --dur-kenburns: 22s;
+  --dur-morph: 350ms;
+  --dur-menu-open: 900ms;
+  --dur-menu-close: 450ms;
+  --dur-map: 900ms;
+  --delay-intent: 120ms; /* hover intent before a menu card opens */
+  --reveal-distance: 28px;
+  --rise-distance: 12px;
+  --zoom-hover: 1.04;
+  --stagger: 90ms;
+  --stagger-line: 110ms;
+  --stagger-menu: 70ms;
+  --stagger-item: 40ms;
+
+  /* sequence grammar (section arrivals) */
+  --seq-eyebrow: 0ms;
+  --seq-title: 120ms;
+  --seq-media: 150ms;
+  --seq-ornament: 520ms;
+  --seq-lead: 650ms;
+  --seq-actions: 800ms;
+
+  /* intro grammar (above-the-fold heroes, CSS keyframes, no JS) */
+  --intro-scale: 1;
+  --intro-frame: calc(200ms * var(--intro-scale));
+  --intro-eyebrow: calc(500ms * var(--intro-scale));
+  --intro-title: calc(650ms * var(--intro-scale));
+  --intro-header: calc(900ms * var(--intro-scale));
+  --intro-lead: calc(1000ms * var(--intro-scale));
+  --intro-seal: calc(1150ms * var(--intro-scale));
+  --intro-bar: calc(1300ms * var(--intro-scale));
+  --intro-sheen: calc(1600ms * var(--intro-scale));
+
+  /* metal */
+  --foil-gold: linear-gradient(var(--light-angle), var(--color-gold-deep) 0%, var(--color-gold-light) 22%,
+      var(--color-gold) 40%, var(--color-foil-highlight) 55%, var(--color-copper) 75%, var(--color-gold-light) 100%);
+  --foil-gold-bg: linear-gradient(var(--light-angle), var(--color-gold-deep) 0%, var(--color-gold-light) 30%,
+      var(--color-gold) 55%, var(--color-foil-glint) 80%, var(--color-copper) 100%);
+  --foil-gold-on-light: linear-gradient(var(--light-angle), var(--color-foil-shadow) 0%, var(--color-gold-deep) 28%,
+      var(--color-gold) 46%, var(--color-gold-light) 55%, var(--color-gold) 64%, var(--color-gold-deep) 82%, var(--color-foil-shadow) 100%);
+  --sheen: linear-gradient(var(--light-angle), transparent 38%,
+      color-mix(in oklab, var(--color-foil-highlight) 55%, transparent) 50%, transparent 62%);
+
+  /* wax (the letter seal) */
+  --wax-hi: color-mix(in oklab, white 26%, transparent);
+  --wax-lo: color-mix(in oklab, black 42%, transparent);
+
+  /* grain: keyword colours only, no hex in data URIs */
+  --grain-dark: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .09 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-light: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='220' height='220'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='.85' numOctaves='2' stitchTiles='stitch'/%3E%3CfeColorMatrix values='0 0 0 0 1 0 0 0 0 1 0 0 0 0 1 0 0 0 .05 0'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)'/%3E%3C/svg%3E");
+  --grain-size: 220px;
+  --laid-lines: repeating-linear-gradient(90deg, color-mix(in oklab, var(--color-ink) 1.6%, transparent) 0 1px, transparent 1px 24px);
+  --guilloche-wave: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='80' height='16' viewBox='0 0 80 16'%3E%3Cpath d='M0 8 Q10 0 20 8 T40 8 T60 8 T80 8' fill='none' stroke='white' stroke-width='0.7'/%3E%3C/svg%3E");
+
+  /* layers (current values preserved: menu 40, header 50, toggle 60) */
+  --z-raised: 10;
+  --z-sticky-bar: 35;
+  --z-overlay: 40;
+  --z-header: 50;
+  --z-toggle: 60;
+}
+
+/* Later visits in a session: the intro plays at 30% of its delays */
+html.intro-seen {
+  --intro-scale: 0.3;
+}
+
+/* Spa: the slowest page on the site */
+.tempo-calm {
+  --dur-reveal: 1600ms;
+  --dur-line: 1400ms;
+  --stagger: 130ms;
+  --dur-kenburns: 36s;
+}
+
+/* ——— Surface scopes: shared primitives read these, so they adapt to their ground ——— */
+/* 1 — full LIGHT set */
+:root,
+.paper,
+.bg-cream,
+.bg-parchment,
+.bg-linen,
+.surface-light,
+.surface-linen {
+  --surface: var(--color-cream);
+  --surface-raised: var(--color-linen);
+  --on-surface: var(--color-ink);
+  --accent-ink: var(--color-gold-ink);
+  --metal: var(--color-gold-deep);
+  --foil: var(--foil-gold-on-light);
+  --rule: var(--color-rule-ink);
+  --rule-strong: var(--color-rule-ink-strong);
+  --rule-accent: var(--color-rule-gold-strong);
+  --deboss-hi: color-mix(in oklab, white 75%, transparent);
+  --deboss-lo: color-mix(in oklab, var(--color-ink) 14%, transparent);
+  --focus-ring: var(--color-gold-ink);
+}
+/* 2 — full DARK set */
+.cloth,
+.bg-forest,
+.bg-pine,
+.surface-cloth,
+.velvet,
+.bg-burgundy,
+.bg-wine,
+.surface-velvet,
+.bg-ink,
+.surface-ink {
+  --surface: var(--color-forest);
+  --surface-raised: var(--color-pine);
+  --on-surface: var(--color-cream);
+  --accent-ink: var(--color-gold-light);
+  --metal: var(--color-gold-light);
+  --foil: var(--foil-gold);
+  --rule: var(--color-rule-gold);
+  --rule-strong: var(--color-rule-gold-strong);
+  --rule-accent: var(--color-rule-gold-strong);
+  --deboss-hi: color-mix(in oklab, white 7%, transparent);
+  --deboss-lo: color-mix(in oklab, black 45%, transparent);
+  --focus-ring: var(--color-gold-light);
+}
+/* 3 — ground overrides */
+.bg-linen,
+.surface-linen {
+  --surface: var(--color-linen);
+  --surface-raised: var(--color-cream);
+}
+.bg-parchment {
+  --surface: var(--color-parchment);
+}
+.bg-pine {
+  --surface: var(--color-pine);
+  --surface-raised: var(--color-emerald);
+}
+.velvet,
+.bg-burgundy,
+.surface-velvet {
+  --surface: var(--color-burgundy);
+  --surface-raised: var(--color-wine);
+}
+.bg-wine {
+  --surface: var(--color-wine);
+  --surface-raised: var(--color-claret);
+}
+.bg-ink,
+.surface-ink {
+  --surface: var(--color-ink);
+  --surface-raised: var(--color-forest);
+}
+
+@property --foil-pos {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+@property --glow {
+  syntax: "<percentage>";
+  inherits: false;
+  initial-value: 0%;
+}
+
+@keyframes slow-zoom {
+  from { transform: scale(1.12); }
+  to { transform: scale(1); }
+}
+
+@keyframes rotate-slow {
+  to { transform: rotate(360deg); }
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  html {
+    scroll-behavior: smooth;
+  }
+}
+
+body {
+  background: var(--color-linen);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  -webkit-font-smoothing: antialiased;
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-ink);
+}
+
+/* ——— Focus: a gold hairline that settles in (never a bare outline:none) ——— */
+@layer base {
+  :where(a, button, input, select, textarea, summary, [tabindex]) {
+    outline: var(--hairline) solid transparent;
+    outline-offset: 8px;
+    transition: outline-offset var(--dur-quick) var(--ease-settle), outline-color var(--dur-quick);
+  }
+  :focus-visible {
+    outline-color: var(--focus-ring);
+    outline-offset: 4px;
+  }
+}
+
+/* ——— Typography (unlayered on purpose: see spec §2.1, the cascade contract) ——— */
+.eyebrow {
+  font-family: var(--font-sans);
+  font-size: 0.7rem;
+  letter-spacing: 0.38em;
+  text-transform: uppercase;
+  font-weight: 500;
+}
+
+.display {
+  font-family: var(--font-display);
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  line-height: 1.02;
+  font-weight: 400;
+}
+
+.editorial {
+  font-family: var(--font-serif);
+  font-style: italic;
+  font-weight: 400;
+}
+
+/* Gold-foil text, hot-foil stamping. Light travels across it as the page moves. */
+.foil {
+  background-image: var(--foil);
+  background-size: 200% 100%;
+  background-position: var(--foil-pos) 50%;
+  -webkit-background-clip: text;
+  background-clip: text;
+  color: transparent;
+}
+
+.foil-bg {
+  background-image: var(--foil-gold-bg);
+}
+
+/* Paper, bookcloth and velvet: the original layers, plus laid lines and a static grain */
+.paper {
+  background-color: var(--color-cream);
+  background-image:
+    radial-gradient(color-mix(in srgb, var(--color-ink) 3.5%, transparent) 1px, transparent 1px),
+    radial-gradient(color-mix(in srgb, var(--color-ink) 2.5%, transparent) 1px, transparent 1px),
+    var(--laid-lines),
+    var(--grain-dark);
+  background-size: 3px 3px, 7px 7px, auto, var(--grain-size) var(--grain-size);
+  background-position: 0 0, 1px 2px, 0 0, 0 0;
+}
+
+.cloth {
+  background-color: var(--color-forest);
+  background-image:
+    repeating-linear-gradient(45deg, color-mix(in srgb, white 1.8%, transparent) 0 1px, transparent 1px 3px),
+    repeating-linear-gradient(-45deg, color-mix(in srgb, black 8%, transparent) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 30% 0%, color-mix(in srgb, var(--color-gold-light) 8%, transparent), transparent 60%),
+    var(--grain-light);
+  background-size: auto, auto, auto, var(--grain-size) var(--grain-size);
+}
+
+.velvet {
+  background-color: var(--color-burgundy);
+  background-image:
+    repeating-linear-gradient(45deg, color-mix(in srgb, white 1.5%, transparent) 0 1px, transparent 1px 3px),
+    radial-gradient(ellipse at 80% 100%, color-mix(in srgb, var(--color-claret) 60%, transparent), transparent 60%),
+    radial-gradient(ellipse at 10% 0%, color-mix(in srgb, var(--color-gold-light) 6%, transparent), transparent 55%),
+    var(--grain-light);
+  background-size: auto, auto, auto, var(--grain-size) var(--grain-size);
+}
+
+/* Guilloche wave band (banknote / spirits label). Decorative, keep it empty. */
+.guilloche {
+  background-color: color-mix(in oklab, var(--color-gold) 22%, transparent);
+  -webkit-mask: var(--guilloche-wave) 0 50% / 80px 16px repeat-x;
+  mask: var(--guilloche-wave) 0 50% / 80px 16px repeat-x;
+}
+
+/* AA: small gold text on light grounds reads in the deeper gold-ink (same role, same hue family) */
+.eyebrow.text-gold-deep,
+.caption.text-gold-deep {
+  color: var(--color-gold-ink);
+}
+
+/* ——— Motion: reveals (content is never hidden without JS; hidden states need html.js) ——— */
+.reveal {
+  transition:
+    opacity var(--dur-reveal) var(--ease-silk) var(--reveal-delay, 0ms),
+    transform var(--dur-reveal) var(--ease-silk) var(--reveal-delay, 0ms);
+}
+.js .reveal:not(.is-visible):not(.reveal-seq) {
+  opacity: 0;
+  transform: translateY(var(--reveal-distance));
+}
+
+/* Ken Burns reads its duration per element, so .tempo-calm can slow it */
+.animate-slow-zoom {
+  animation-duration: var(--dur-kenburns);
+}
+
+/* Legacy zoom, kept for link cards that hold a bare <img> */
+.img-zoom img {
+  transition: scale var(--dur-zoom) var(--ease-silk);
+}
+.img-zoom:hover img {
+  scale: var(--zoom-hover);
+}
+
+.spin-slow {
+  animation: rotate-slow 60s linear infinite;
+}
+
+.link-underline {
+  background-image: linear-gradient(currentColor, currentColor);
+  background-size: 0% 1px;
+  background-position: 0 100%;
+  background-repeat: no-repeat;
+  transition: background-size var(--dur-hover) ease;
+}
+.link-underline:hover,
+.link-underline:focus-visible,
+a:is(:hover, :focus-visible) > .link-underline,
+.group:is(:hover, :focus-visible) .link-underline {
+  background-size: 100% 1px;
+}
+.link-foil {
+  background-image: var(--foil);
+}
+
+/* ——— Form fields: the underline foil-draws from the left ——— */
+.field {
+  width: 100%;
+  background-color: transparent;
+  background-image: var(--foil);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 2px;
+  background-origin: border-box;
+  background-clip: border-box;
+  border: 0;
+  border-bottom: var(--hairline) solid var(--color-rule-ink-strong);
+  padding: 0.85rem 0 0.6rem;
+  font-family: var(--font-serif);
+  font-size: 1.2rem;
+  color: var(--color-ink);
+  outline: var(--hairline) solid transparent; /* visible in forced-colors; focus shows as the 2px foil draw */
+  transition: border-color var(--dur-quick), background-size var(--dur-hover) var(--ease-settle);
+  border-radius: 0;
+}
+.field:focus {
+  border-bottom-color: var(--color-gold-deep);
+  background-size: 100% 2px;
+}
+.field[aria-invalid="true"] {
+  border-bottom: var(--hairline) dotted var(--color-claret);
+}
+.field::placeholder {
+  color: var(--color-ink-muted);
+}
+select.field {
+  appearance: none;
+  padding-right: 1.75rem;
+  background-image:
+    var(--foil),
+    linear-gradient(45deg, transparent calc(50% - 0.6px), var(--accent-ink) calc(50% - 0.6px), var(--accent-ink) calc(50% + 0.6px), transparent calc(50% + 0.6px)),
+    linear-gradient(-45deg, transparent calc(50% - 0.6px), var(--accent-ink) calc(50% - 0.6px), var(--accent-ink) calc(50% + 0.6px), transparent calc(50% + 0.6px));
+  background-size: 0% 2px, 6px 6px, 6px 6px;
+  background-position: left bottom, right calc(0.25rem + 6px) center, right 0.25rem center;
+  background-repeat: no-repeat;
+  background-origin: border-box, padding-box, padding-box;
+}
+select.field:focus {
+  background-size: 100% 2px, 6px 6px, 6px 6px;
+}
+
+/* ——— New roles (layered: utilities may override them) ——— */
+@layer components {
+  .metal {
+    color: var(--metal);
+  }
+  .figure {
+    font-family: var(--font-display);
+    font-variant-numeric: lining-nums;
+  }
+  .letterpress {
+    text-shadow: 0 1px 0 var(--deboss-hi);
+  }
+  .deboss {
+    color: var(--surface);
+    text-shadow:
+      0 max(1px, 0.012em) 0 var(--deboss-hi),
+      0 calc(-1 * max(1px, 0.012em)) 0 var(--deboss-lo);
+  }
+  .deboss-svg {
+    color: var(--surface);
+    filter: drop-shadow(0 1px 0 var(--deboss-hi)) drop-shadow(0 -1px 0 var(--deboss-lo));
+  }
+  .foil-emboss {
+    display: inline-block;
+    filter: drop-shadow(0 1px 0 var(--deboss-lo));
+  }
+  .caption {
+    font-family: var(--font-sans);
+    font-size: var(--text-caption);
+    letter-spacing: 0.3em;
+    text-transform: uppercase;
+    font-weight: 500;
+    color: var(--accent-ink);
+  }
+  .chapter-numeral {
+    font-family: var(--font-display);
+    font-size: var(--text-chapter);
+    letter-spacing: 0.12em;
+    line-height: 1;
+    color: var(--accent-ink);
+  }
+  .colossal {
+    font-family: var(--font-display);
+    font-size: var(--text-colossal);
+    line-height: var(--text-colossal--line-height);
+    text-transform: uppercase;
+    letter-spacing: 0.01em;
+    white-space: nowrap;
+    pointer-events: none;
+    user-select: none;
+  }
+  .colossal-outline {
+    -webkit-text-stroke: var(--hairline) color-mix(in oklab, var(--metal) 45%, transparent);
+    color: transparent;
+  }
+  .initial::first-letter {
+    font-family: var(--font-display);
+    font-style: normal;
+    float: left;
+    font-size: 4.1em;
+    line-height: 0.8;
+    margin: 0.06em 0.12em 0 0;
+    color: var(--metal);
+  }
+  @supports (initial-letter: 3) {
+    .initial::first-letter {
+      initial-letter: 3;
+      float: none;
+      font-size: inherit;
+      line-height: inherit;
+      margin: 0 0.14em 0 0;
+    }
+  }
+  .gilt-edge {
+    position: relative;
+  }
+  .gilt-edge::before {
+    content: "";
+    position: absolute;
+    inset: 0 0 auto 0;
+    height: var(--hairline);
+    background-image: var(--foil-gold);
+    opacity: 0.6;
+    pointer-events: none;
+    z-index: 1;
+  }
+  .perforation-x {
+    min-height: 2px;
+    background: radial-gradient(circle, var(--rule-strong) var(--leader-dot), transparent calc(var(--leader-dot) + 0.2px)) 0 50% / var(--leader-gap) 100% repeat-x;
+  }
+  .perforation-y {
+    min-width: 2px;
+    background: radial-gradient(circle, var(--rule-strong) var(--leader-dot), transparent calc(var(--leader-dot) + 0.2px)) 50% 0 / 100% var(--leader-gap) repeat-y;
+  }
+  .ticket {
+    --tear: 50%;
+    -webkit-mask:
+      radial-gradient(circle var(--notch) at 0 var(--tear), transparent 98%, black),
+      radial-gradient(circle var(--notch) at 100% var(--tear), transparent 98%, black);
+    -webkit-mask-composite: source-in;
+    mask:
+      radial-gradient(circle var(--notch) at 0 var(--tear), transparent 98%, black),
+      radial-gradient(circle var(--notch) at 100% var(--tear), transparent 98%, black);
+    mask-composite: intersect;
+  }
+  .leaders {
+    display: flex;
+    align-items: baseline;
+    gap: 0.75rem;
+  }
+  .leaders-fill {
+    flex: 1;
+    min-width: 1.5rem;
+    height: calc(var(--leader-dot) * 2 + 1px);
+    translate: 0 -0.28em;
+    background: radial-gradient(circle, var(--rule-strong) var(--leader-dot), transparent calc(var(--leader-dot) + 0.2px)) 0 50% / var(--leader-gap) 100% repeat-x;
+  }
+
+  /* Lozenge: the shared mark */
+  .lozenge {
+    display: inline-block;
+    flex-shrink: 0;
+    width: var(--lozenge-sm);
+    height: var(--lozenge-sm);
+    rotate: 45deg;
+  }
+  .lozenge-xs { width: var(--lozenge-xs); height: var(--lozenge-xs); }
+  .lozenge-md { width: var(--lozenge-md); height: var(--lozenge-md); }
+  .lozenge-outline { border: var(--hairline) solid currentColor; }
+  .lozenge-solid { background-color: currentColor; }
+  .lozenge-foil { background-image: var(--foil-gold); }
+
+  /* Buttons: one behaviour for links and form buttons */
+  .btn {
+    position: relative;
+    isolation: isolate;
+    overflow: hidden;
+    display: inline-flex;
+    align-items: center;
+    gap: 0.75rem;
+    min-height: var(--hit);
+    padding: 1rem 1.75rem;
+    cursor: pointer;
+    transition:
+      color var(--dur-hover) var(--ease-silk),
+      background-color var(--dur-hover) var(--ease-silk),
+      border-color var(--dur-hover) var(--ease-silk),
+      box-shadow var(--dur-quick) var(--ease-silk),
+      translate var(--dur-quick) var(--ease-silk),
+      outline-offset var(--dur-quick) var(--ease-settle),
+      outline-color var(--dur-quick);
+  }
+  .btn:disabled {
+    cursor: default;
+  }
+  .btn-foil {
+    background-image: var(--foil-gold-bg);
+    color: var(--color-ink);
+    box-shadow: var(--shadow-press);
+  }
+  .btn-foil::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    z-index: -1;
+    background-image: var(--sheen);
+    mix-blend-mode: soft-light;
+    transform: translateX(-120%);
+    pointer-events: none;
+  }
+  .btn-foil:active {
+    translate: 0 1px;
+    box-shadow: var(--shadow-press-deep);
+  }
+  .btn-outline-light {
+    border: var(--hairline) solid color-mix(in oklab, var(--color-cream) 40%, transparent);
+    color: var(--color-cream);
+  }
+  .btn-outline-light:hover {
+    border-color: var(--color-gold-light);
+    color: var(--color-gold-light);
+  }
+  .btn-outline-dark {
+    border: var(--hairline) solid color-mix(in oklab, var(--color-ink) 30%, transparent);
+    color: var(--color-ink);
+  }
+  .btn-outline-dark:hover {
+    border-color: var(--color-gold-deep);
+    color: var(--color-gold-ink);
+  }
+  .btn-dark {
+    background-color: var(--color-forest);
+    color: var(--color-cream);
+  }
+  .btn-dark:hover {
+    background-color: var(--color-pine);
+  }
+  .btn-quiet {
+    padding-inline: 0;
+    overflow: visible;
+  }
+  .btn-quiet-light { color: var(--color-gold-light); }
+  .btn-quiet-light:hover { color: var(--color-cream); }
+  .btn-quiet-dark { color: var(--color-gold-ink); }
+  .btn-quiet-dark:hover { color: var(--color-ink); }
+
+  /* Engraved arrow: shaft, open head and lozenge tail. Fixed box, no layout shift. */
+  .arrow {
+    position: relative;
+    display: inline-block;
+    flex-shrink: 0;
+    width: calc(var(--arrow-length) + var(--arrow-reach) + 4px);
+    height: 10px;
+    color: inherit;
+  }
+  .arrow-tail {
+    position: absolute;
+    left: 0.5px;
+    top: 50%;
+    width: 3px;
+    height: 3px;
+    margin-top: -1.5px;
+    rotate: 45deg;
+    border: var(--hairline) solid currentColor;
+  }
+  .arrow-shaft {
+    position: absolute;
+    left: 4px;
+    top: 50%;
+    width: calc(var(--arrow-length) + var(--arrow-reach));
+    height: var(--hairline);
+    margin-top: -0.5px;
+    background-color: currentColor;
+    clip-path: inset(0 var(--arrow-reach) 0 0);
+    transition: clip-path var(--dur-hover) var(--ease-settle);
+  }
+  .arrow-head {
+    position: absolute;
+    left: calc(4px + var(--arrow-length) - var(--arrow-head));
+    top: 0;
+    width: var(--arrow-head);
+    height: 10px;
+    transition: translate var(--dur-hover) var(--ease-settle);
+  }
+  :is(a, button, .group):is(:hover, :focus-visible) .arrow-shaft,
+  .group:focus-within .arrow-shaft {
+    clip-path: inset(0 0 0 0);
+  }
+  :is(a, button, .group):is(:hover, :focus-visible) .arrow-head,
+  .group:focus-within .arrow-head {
+    translate: var(--arrow-reach) 0;
+  }
+  .arrow-back {
+    scale: -1 1;
+  }
+
+  /* Plate caption: a 2rem rule, then the caption, right aligned */
+  .plate-caption {
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    gap: 0.75rem;
+  }
+  .plate-caption::before {
+    content: "";
+    width: 2rem;
+    height: var(--hairline);
+    background-color: var(--rule);
+    flex-shrink: 0;
+  }
+
+  /* Mounted photo: a cream mount with a pressed inner line */
+  .photo-mount {
+    background-color: var(--color-cream);
+    padding: var(--plate-mount);
+    box-shadow: var(--shadow-mount);
+  }
+  .photo-mount > .photo {
+    box-shadow: 0 0 0 var(--hairline) color-mix(in oklab, var(--color-ink) 12%, transparent), 0 0 0 calc(var(--hairline) * 2) color-mix(in oklab, white 60%, transparent);
+  }
+
+  /* Label plate (ref 3): scooped corners, double rule */
+  .label-plate {
+    position: relative;
+    -webkit-mask:
+      radial-gradient(circle var(--notch) at 0 0, transparent 98%, black) top left / 51% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 100% 0, transparent 98%, black) top right / 51% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 0 100%, transparent 98%, black) bottom left / 51% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 100% 100%, transparent 98%, black) bottom right / 51% 51% no-repeat;
+    mask:
+      radial-gradient(circle var(--notch) at 0 0, transparent 98%, black) top left / 51% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 100% 0, transparent 98%, black) top right / 51% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 0 100%, transparent 98%, black) bottom left / 51% 51% no-repeat,
+      radial-gradient(circle var(--notch) at 100% 100%, transparent 98%, black) bottom right / 51% 51% no-repeat;
+  }
+  .label-plate-corner {
+    position: absolute;
+    width: calc(var(--notch) + var(--frame-gap) * 2);
+    height: calc(var(--notch) + var(--frame-gap) * 2);
+    color: var(--rule-accent);
+    pointer-events: none;
+  }
+  .label-band {
+    position: relative;
+    display: inline-flex;
+    align-items: center;
+    padding: 0.7rem 2.25rem;
+    background-color: var(--surface-raised);
+    clip-path: polygon(0 50%, 1.1rem 0, calc(100% - 1.1rem) 0, 100% 50%, calc(100% - 1.1rem) 100%, 1.1rem 100%);
+  }
+  .label-band::before,
+  .label-band::after {
+    content: "";
+    position: absolute;
+    left: 1.1rem;
+    right: 1.1rem;
+    height: var(--hairline);
+    background-image: var(--foil-gold);
+  }
+  .label-band::before { top: 3px; }
+  .label-band::after { bottom: 3px; }
+
+  /* Fact badge (ref 3) */
+  .badge {
+    --badge-size: var(--badge-md);
+    position: relative;
+    display: grid;
+    place-items: center;
+    width: var(--badge-size);
+    height: var(--badge-size);
+    flex-shrink: 0;
+    text-align: center;
+  }
+  .badge-sm { --badge-size: var(--badge-sm); }
+  .badge-lg { --badge-size: var(--badge-lg); }
+  .badge-group {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+  }
+  @media (min-width: 768px) {
+    .badge-group {
+      flex-wrap: nowrap;
+      gap: 0;
+    }
+    .badge-group > * + * {
+      margin-left: calc(var(--badge-size, var(--badge-md)) * -0.12);
+    }
+    .badge-group > :nth-child(even) {
+      margin-top: calc(var(--badge-size, var(--badge-md)) * 0.18);
+    }
+  }
+
+  /* Frame overlay (layered, so inset-* / hidden / lg:block utilities win) */
+  .frame {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+  }
+
+  /* Colossal type, cropped by its section (the parent uses overflow-clip) */
+  .colossal-bleed-left { left: -0.06em; top: 0; }
+  .colossal-bleed-right { right: -0.06em; top: 0; }
+  /* centred by transform (not text-align), so a word wider than its section crops evenly on both sides;
+     transform, not translate, so it composes with .drift */
+  .colossal-bleed-bottom { left: 50%; bottom: -0.16em; transform: translateX(-50%); }
+  .colossal-bleed-right-bottom { right: -0.06em; bottom: -0.16em; }
+}
+
+/* Scope-aware helpers (utilities, so they take variants) */
+@utility muted {
+  color: color-mix(in oklab, var(--on-surface) 66%, transparent);
+}
+@utility rule-accent {
+  background-color: var(--rule-accent);
+}
+
+/* ——— Keyframes (compositor-only, except foil and candle) ——— */
+@keyframes foil-travel {
+  from { --foil-pos: 0%; }
+  to { --foil-pos: 100%; }
+}
+@keyframes foil-sheen {
+  from { --foil-pos: 100%; }
+  to { --foil-pos: 0%; }
+}
+@keyframes sheen-pass {
+  from { transform: translateX(-120%); }
+  to { transform: translateX(120%); }
+}
+@keyframes stamp {
+  0% { transform: scale(1.12); opacity: 0; }
+  60% { transform: scale(0.985); opacity: 1; }
+  100% { transform: none; opacity: 1; }
+}
+@keyframes rise {
+  from { transform: translateY(105%); }
+  to { transform: none; }
+}
+@keyframes fade-up {
+  from { opacity: 0; transform: translateY(var(--rise-distance)); }
+  to { opacity: 1; transform: none; }
+}
+@keyframes fade-in {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@keyframes wipe-in {
+  from { clip-path: inset(0 100% 0 0); }
+  to { clip-path: inset(0); }
+}
+@keyframes draw-x {
+  from { scale: 0 1; }
+  to { scale: 1 1; }
+}
+@keyframes draw-y {
+  from { scale: 1 0; }
+  to { scale: 1 1; }
+}
+@keyframes grow-x {
+  from { scale: 0 1; }
+  to { scale: 1 1; }
+}
+@keyframes dash-draw {
+  from { stroke-dashoffset: 1; }
+  to { stroke-dashoffset: 0; }
+}
+@keyframes drift {
+  from { translate: calc(var(--drift-from, -3%) * var(--drift-scale, 1)) 0; }
+  to { translate: calc(var(--drift-to, 3%) * var(--drift-scale, 1)) 0; }
+}
+@keyframes drift-y {
+  from { translate: 0 calc(var(--drift-from, 24px) * var(--drift-scale, 1)); }
+  to { translate: 0 calc(var(--drift-to, -24px) * var(--drift-scale, 1)); }
+}
+@keyframes candle {
+  from { --glow: 0%; }
+  to { --glow: 130%; }
+}
+@keyframes crest {
+  from { clip-path: inset(100% 0 0 0); }
+  to { clip-path: inset(0); }
+}
+@keyframes node-fill {
+  from { background-color: transparent; }
+  to { background-color: var(--color-gold-light); }
+}
+@keyframes hero-img {
+  to { translate: 0 12vh; }
+}
+@keyframes hero-copy {
+  to { translate: 0 -6vh; opacity: 0.25; }
+}
+
+/* ——— Sequence grammar: eyebrow wipe → title lines → ornament draw → lead → actions ——— */
+.reveal-seq [data-seq] {
+  --seq-at: calc(var(--reveal-delay, 0ms) + var(--seq-offset, 0ms) + var(--i, 0) * var(--stagger));
+}
+[data-seq="eyebrow"] { --seq-offset: var(--seq-eyebrow); }
+[data-seq="title"] { --seq-offset: var(--seq-title); }
+[data-seq="media"] { --seq-offset: var(--seq-media); }
+[data-seq="ornament"] { --seq-offset: var(--seq-ornament); }
+[data-seq="lead"] { --seq-offset: var(--seq-lead); }
+[data-seq="actions"] { --seq-offset: var(--seq-actions); }
+
+/*
+ * The eyebrow wipes in with a keyframe, not a transition: a transition from inset() to the resting
+ * `none` cannot interpolate (it would pop). `backwards` holds the hidden frame through the delay and
+ * then releases the clip entirely, so nothing (focus rings, overshooting glyphs) stays clipped.
+ */
+.js .reveal-seq:not(.is-visible) [data-seq="eyebrow"] {
+  clip-path: inset(0 100% 0 0);
+}
+/* only once every sequence around it has arrived (a nested, unrevealed sequence keeps it hidden) */
+.js .reveal-seq.is-visible [data-seq="eyebrow"]:not(.reveal-seq:not(.is-visible) *) {
+  animation: wipe-in var(--dur-reveal) var(--ease-settle) var(--seq-at) backwards;
+}
+.reveal-seq :is([data-seq="lead"], [data-seq="actions"], [data-seq="ornament"], [data-seq="title"]:not(:has(.line-mask)), [data-seq="media"]:not(:has(.photo[data-curtain]))) {
+  transition:
+    opacity var(--dur-reveal) var(--ease-silk) var(--seq-at),
+    transform var(--dur-reveal) var(--ease-silk) var(--seq-at);
+}
+.js .reveal-seq:not(.is-visible) :is([data-seq="lead"], [data-seq="actions"], [data-seq="ornament"], [data-seq="title"]:not(:has(.line-mask)), [data-seq="media"]:not(:has(.photo[data-curtain]))) {
+  opacity: 0;
+  transform: translateY(var(--rise-distance));
+}
+
+/* ——— Lines: each line rises out of its own mask ——— */
+.line-mask {
+  display: inline-block;
+  max-width: 100%; /* a whole-kept foil span wraps inside its mask rather than overflowing narrow screens */
+  overflow: clip;
+  padding-block: 0.14em;
+  margin-block: -0.14em;
+  vertical-align: top;
+}
+.line-inner {
+  display: inline-block;
+}
+.reveal .lines:not(.lines-intro) .line-inner {
+  transition: transform var(--dur-line) var(--ease-settle)
+    calc(var(--reveal-delay, 0ms) + var(--seq-title) + var(--line, 0) * var(--stagger-line));
+}
+.js .reveal:not(.is-visible) .lines:not(.lines-intro) .line-inner {
+  transform: translateY(105%);
+}
+.lines-intro .line-inner {
+  animation: rise var(--dur-line) var(--ease-settle) calc(var(--intro-title) + var(--line, 0) * var(--stagger-line)) both;
+}
+
+/* ——— Intro grammar (above-the-fold heroes; CSS only, ends visible) ——— */
+.intro-eyebrow {
+  animation: wipe-in var(--dur-reveal) var(--ease-settle) var(--intro-eyebrow) both;
+}
+.intro-lead {
+  animation: fade-up var(--dur-reveal) var(--ease-silk) var(--intro-lead) both;
+}
+.intro-bar {
+  animation: fade-up var(--dur-reveal) var(--ease-settle) var(--intro-bar) both;
+}
+.intro-header {
+  animation: fade-in var(--dur-base) var(--ease-silk) var(--intro-header) both;
+}
+.intro-fade {
+  animation: fade-in var(--dur-reveal) var(--ease-silk) var(--intro-lead) both;
+}
+
+/* ——— Living foil: light crosses the letters as they cross the viewport ——— */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .foil:not([data-sheen]) {
+      animation: foil-travel linear both;
+      animation-timeline: view();
+      animation-range: cover 10% cover 90%;
+    }
+  }
+  .js .is-visible .foil[data-sheen]:not(.counter) {
+    animation: foil-sheen var(--dur-sheen) var(--ease-curtain)
+      calc(var(--reveal-delay, 0ms) + var(--seq-title) + var(--dur-line) * 0.6) both;
+  }
+  .lines-intro .foil[data-sheen],
+  .intro-sheen {
+    animation: foil-sheen var(--dur-sheen) var(--ease-curtain) var(--intro-sheen) both;
+  }
+  .counter.foil[data-sheen][data-landed] {
+    animation: foil-sheen var(--dur-sheen) var(--ease-curtain) both;
+  }
+  .btn-foil:hover::after,
+  .btn-foil:focus-visible::after {
+    animation: sheen-pass var(--dur-sheen) var(--ease-curtain) 1;
+  }
+  .btn-foil[aria-busy="true"]::after {
+    animation: sheen-pass var(--dur-sheen) var(--ease-curtain) infinite; /* the only loop; ends with the request */
+  }
+}
+
+/* ——— Counter: the final value is reserved invisibly, so nothing shifts ——— */
+.counter-stack {
+  display: inline-grid;
+}
+.counter-stack > :not(.sr-only) {
+  grid-area: 1 / 1;
+}
+.counter-ghost {
+  visibility: hidden;
+}
+
+/* ——— Photo plates and curtains ——— */
+.photo {
+  position: relative;
+  overflow: hidden;
+  --curtain-at: calc(var(--reveal-delay, 0ms) + var(--seq-media) + var(--photo-delay, 0ms) + var(--i, 0) * var(--stagger));
+}
+.photo > img {
+  transition:
+    transform calc(var(--dur-curtain) * 1.2) var(--ease-silk) var(--curtain-at),
+    scale var(--dur-zoom) var(--ease-silk);
+}
+.photo[data-curtain]::after {
+  content: "";
+  position: absolute;
+  inset: 0;
+  z-index: 1;
+  background-color: var(--surface);
+  pointer-events: none;
+  transform: var(--curtain-out);
+  transition: transform var(--dur-curtain) var(--ease-curtain) var(--curtain-at);
+}
+.photo[data-curtain="up"] { --curtain-out: translateY(-101%); }
+.photo[data-curtain="down"] { --curtain-out: translateY(101%); }
+.photo[data-curtain="left"] { --curtain-out: translateX(-101%); }
+.photo[data-curtain="right"] { --curtain-out: translateX(101%); }
+.photo[data-curtain="up"]::after { box-shadow: inset 0 calc(-1 * var(--hairline)) 0 var(--color-gold); }
+.photo[data-curtain="down"]::after { box-shadow: inset 0 var(--hairline) 0 var(--color-gold); }
+.photo[data-curtain="left"]::after { box-shadow: inset calc(-1 * var(--hairline)) 0 0 var(--color-gold); }
+.photo[data-curtain="right"]::after { box-shadow: inset var(--hairline) 0 0 var(--color-gold); }
+.js .reveal:not(.is-visible) .photo[data-curtain]::after {
+  transform: none;
+}
+.js .reveal:not(.is-visible) .photo[data-curtain] > img {
+  transform: scale(1.12);
+}
+/* Zoom only where a click exists */
+a:is(:hover, :focus-visible) .photo img {
+  scale: var(--zoom-hover);
+}
+
+/* ——— Ornament: the rules draw outward from the lozenge ——— */
+.orn-rule {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--dur-draw) var(--ease-settle) calc(var(--reveal-delay, 0ms) + var(--seq-ornament));
+}
+.orn-mark {
+  transform-box: fill-box;
+  transform-origin: center;
+  transition:
+    transform var(--dur-draw) var(--ease-settle) calc(var(--reveal-delay, 0ms) + var(--seq-ornament)),
+    opacity var(--dur-base) var(--ease-silk) calc(var(--reveal-delay, 0ms) + var(--seq-ornament));
+}
+.js .reveal:not(.is-visible) .ornament[data-draw] .orn-rule {
+  stroke-dashoffset: 1;
+}
+.js .reveal:not(.is-visible) .ornament[data-draw] .orn-mark {
+  transform: scale(0.6);
+  opacity: 0;
+}
+.draw-on-mount .orn-rule {
+  animation: dash-draw var(--dur-draw) var(--ease-settle) var(--dur-stamp) both;
+}
+.draw-on-mount .orn-mark {
+  animation: fade-in var(--dur-base) var(--ease-silk) var(--dur-stamp) both;
+}
+
+/* ——— Rings draw, then the object stamps (seals, badges) ——— */
+.draw-ring {
+  stroke-dasharray: 1;
+  stroke-dashoffset: 0;
+  transition: stroke-dashoffset var(--dur-draw) var(--ease-settle) var(--reveal-delay, 0ms);
+}
+.js .reveal:not(.is-visible) .draw-ring {
+  stroke-dashoffset: 1;
+}
+.js .reveal:not(.is-visible) .stamp-in {
+  opacity: 0;
+}
+.js .reveal.is-visible .stamp-in {
+  animation: stamp var(--dur-stamp) var(--ease-settle) calc(var(--reveal-delay, 0ms) + var(--dur-draw) * 0.45) both;
+}
+.intro-seal .draw-ring {
+  animation: dash-draw var(--dur-draw) var(--ease-settle) var(--intro-seal) both;
+}
+.intro-seal .stamp-in,
+.intro-seal.stamp-in {
+  animation: stamp var(--dur-stamp) var(--ease-settle) calc(var(--intro-seal) + var(--dur-draw) * 0.45) both;
+}
+.stamp-on-mount {
+  animation: stamp var(--dur-stamp) var(--ease-settle) both;
+}
+
+/* ——— Frame: edges draw from the corners, then the corners settle ——— */
+.frame {
+  --frame-at: var(--reveal-delay, 0ms);
+}
+.frame-edge {
+  position: absolute;
+  background-color: var(--rule-accent);
+  transition: scale var(--dur-draw) var(--ease-settle) var(--frame-at);
+}
+.frame-edge[data-e="t"] { top: 0; left: 0; right: 0; height: var(--hairline); transform-origin: left; }
+.frame-edge[data-e="r"] { top: 0; bottom: 0; right: 0; width: var(--hairline); transform-origin: top; }
+.frame-edge[data-e="b"] { bottom: 0; left: 0; right: 0; height: var(--hairline); transform-origin: right; }
+.frame-edge[data-e="l"] { top: 0; bottom: 0; left: 0; width: var(--hairline); transform-origin: bottom; }
+.frame-inner {
+  position: absolute;
+  inset: var(--frame-gap);
+}
+.frame-inner > .frame-edge {
+  background-color: var(--rule);
+}
+.frame-inner > .frame-edge:is([data-e="t"], [data-e="b"]) { height: var(--hairline-fine); }
+.frame-inner > .frame-edge:is([data-e="l"], [data-e="r"]) { width: var(--hairline-fine); }
+.frame-inner[data-style="dotted"] > .frame-edge {
+  background-color: transparent;
+}
+.frame-inner[data-style="dotted"] > .frame-edge:is([data-e="t"], [data-e="b"]) {
+  height: 2px;
+  margin-block: -0.75px;
+  background: radial-gradient(circle, var(--rule-strong) var(--leader-dot), transparent calc(var(--leader-dot) + 0.2px)) 0 50% / var(--leader-gap) 100% repeat-x;
+}
+.frame-inner[data-style="dotted"] > .frame-edge:is([data-e="l"], [data-e="r"]) {
+  width: 2px;
+  margin-inline: -0.75px;
+  background: radial-gradient(circle, var(--rule-strong) var(--leader-dot), transparent calc(var(--leader-dot) + 0.2px)) 50% 0 / 100% var(--leader-gap) repeat-y;
+}
+.frame-corner {
+  position: absolute;
+  width: var(--frame-corner);
+  height: var(--frame-corner);
+  color: var(--accent-ink);
+  transition: opacity var(--dur-base) var(--ease-silk) calc(var(--frame-at) + var(--dur-draw) * 0.5);
+}
+.frame-corner[data-c="tl"] { top: -1px; left: -1px; }
+.frame-corner[data-c="tr"] { top: -1px; right: -1px; rotate: 90deg; }
+.frame-corner[data-c="br"] { bottom: -1px; right: -1px; rotate: 180deg; }
+.frame-corner[data-c="bl"] { bottom: -1px; left: -1px; rotate: 270deg; }
+.frame-corner[data-kind="tick"] {
+  width: var(--frame-tick);
+  height: var(--frame-tick);
+}
+/* reveal */
+.js .reveal:not(.is-visible) .frame[data-draw="reveal"] .frame-edge:is([data-e="t"], [data-e="b"]) { scale: 0 1; }
+.js .reveal:not(.is-visible) .frame[data-draw="reveal"] .frame-edge:is([data-e="l"], [data-e="r"]) { scale: 1 0; }
+.js .reveal:not(.is-visible) .frame[data-draw="reveal"] .frame-corner { opacity: 0; }
+/* hover: hidden at rest, drawn by the nearest link or group */
+.frame[data-draw="hover"] { --frame-at: 0ms; }
+.frame[data-draw="hover"] .frame-edge { transition-duration: var(--dur-hover); }
+.frame[data-draw="hover"] .frame-edge:is([data-e="t"], [data-e="b"]) { scale: 0 1; }
+.frame[data-draw="hover"] .frame-edge:is([data-e="l"], [data-e="r"]) { scale: 1 0; }
+.frame[data-draw="hover"] .frame-corner { opacity: 0; transition-delay: 0ms; }
+:is(a, .group):is(:hover, :focus-visible, :focus-within) .frame[data-draw="hover"] .frame-edge { scale: 1 1; }
+:is(a, .group):is(:hover, :focus-visible, :focus-within) .frame[data-draw="hover"] .frame-corner {
+  opacity: 1;
+  transition-delay: calc(var(--dur-hover) * 0.5);
+}
+/* intro */
+.frame[data-draw="intro"] .frame-edge:is([data-e="t"], [data-e="b"]) {
+  animation: draw-x var(--dur-draw) var(--ease-settle) var(--intro-frame) both;
+}
+.frame[data-draw="intro"] .frame-edge:is([data-e="l"], [data-e="r"]) {
+  animation: draw-y var(--dur-draw) var(--ease-settle) var(--intro-frame) both;
+}
+.frame[data-draw="intro"] .frame-corner {
+  animation: fade-in var(--dur-base) var(--ease-silk) calc(var(--intro-frame) + var(--dur-draw) * 0.5) both;
+}
+html.intro-seen .frame[data-draw="intro"] :is(.frame-edge, .frame-corner) {
+  animation: none;
+}
+
+/* ——— Drift: ornaments and layered photos move with scroll depth ——— */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .drift {
+      animation: drift linear both;
+      animation-timeline: view();
+    }
+    .drift-y {
+      animation: drift-y linear both;
+      animation-timeline: view();
+    }
+  }
+}
+@media (max-width: 767px) {
+  :root {
+    --drift-scale: 0.5;
+  }
+}
+
+/* ——— PageHero depth: the plate sinks, the copy lifts (gradients never move) ——— */
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: scroll()) {
+    .hero-depth-img {
+      animation: hero-img linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 70vh;
+    }
+    .hero-depth-copy {
+      animation: hero-copy linear both;
+      animation-timeline: scroll(root);
+      animation-range: 0 70vh;
+    }
+  }
+}
+
+/* ——— Crest: the final-CTA emblem rises through a clip (a keyframe, so inset() never meets `none`) ——— */
+.js .reveal:not(.is-visible) .crest {
+  clip-path: inset(100% 0 0 0);
+}
+.js .reveal.is-visible .crest:not(.reveal:not(.is-visible) *) {
+  animation: crest var(--dur-draw) var(--ease-settle) var(--reveal-delay, 0ms) backwards;
+}
+
+/* ——— Candlelight: the whisky wall glows in like eyes adjusting ——— */
+.candlelight {
+  --glow: 130%;
+  -webkit-mask-image: radial-gradient(circle at var(--glow-x, 78%) var(--glow-y, 50%), black var(--glow), transparent calc(var(--glow) + 40%));
+  mask-image: radial-gradient(circle at var(--glow-x, 78%) var(--glow-y, 50%), black var(--glow), transparent calc(var(--glow) + 40%));
+}
+@media (max-width: 767px) {
+  .candlelight {
+    --glow-x: 50%;
+    --glow-y: 72%;
+  }
+}
+@media (prefers-reduced-motion: no-preference) {
+  .candlelight {
+    animation: candle var(--dur-candle) var(--ease-settle) 200ms both;
+  }
+}
+
+/* ——— Heritage spine: the thread draws as you read ——— */
+.spine {
+  view-timeline: --history block;
+}
+.spine-fill {
+  background-color: var(--color-gold-light);
+  transform-origin: top;
+}
+.spine-node {
+  background-color: var(--color-gold-light);
+}
+@media (prefers-reduced-motion: no-preference) {
+  @supports (animation-timeline: view()) {
+    .spine-fill {
+      animation: draw-y linear both;
+      animation-timeline: --history;
+      animation-range: cover 15% cover 85%;
+    }
+    .spine-node {
+      animation: node-fill linear both;
+      animation-timeline: view();
+      animation-range: contain 40% contain 45%;
+    }
+  }
+}
+
+/* ——— Rail: scroll-linked progress thread ——— */
+.rail-scope {
+  timeline-scope: --rail;
+}
+.rail {
+  scroll-timeline: --rail inline;
+  scrollbar-color: var(--color-gold-deep) transparent;
+  scrollbar-width: thin;
+}
+.rail-thread {
+  display: none;
+}
+@supports (animation-timeline: scroll()) {
+  .rail-thread {
+    display: block;
+    height: var(--hairline);
+    background-color: var(--rule);
+    position: relative;
+    overflow: hidden;
+  }
+  .rail-thread::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background-image: var(--foil);
+    transform-origin: left;
+    animation: grow-x linear both;
+    animation-timeline: --rail;
+  }
+}
+
+/* ——— Header ——— */
+.header-bg {
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-silk);
+}
+[data-scrolled="true"] .header-bg {
+  opacity: 1;
+}
+.header-bar {
+  transition: padding-block var(--dur-base) var(--ease-silk);
+}
+.header-progress {
+  position: absolute;
+  inset: auto 0 0 0;
+  height: var(--hairline);
+  background-color: color-mix(in oklab, var(--color-gold) 60%, transparent);
+  transform-origin: left;
+  opacity: 0;
+  transition: opacity var(--dur-base) var(--ease-silk);
+}
+[data-scrolled="true"] .header-progress {
+  opacity: 1;
+}
+@supports (animation-timeline: scroll()) {
+  @media (prefers-reduced-motion: no-preference) {
+    .header-progress {
+      animation: grow-x linear both;
+      animation-timeline: scroll(root block);
+    }
+  }
+}
+@supports not (animation-timeline: scroll()) {
+  .header-progress {
+    background-color: var(--color-rule-gold);
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .header-progress {
+    background-color: var(--color-rule-gold);
+  }
+}
+.logo-sub {
+  display: grid;
+  grid-template-rows: 1fr;
+  transition: grid-template-rows var(--dur-base) var(--ease-silk), opacity var(--dur-base) var(--ease-silk);
+}
+.logo-sub > * {
+  min-height: 0;
+  overflow: hidden;
+}
+[data-scrolled="true"] .logo-sub {
+  grid-template-rows: 0fr;
+  opacity: 0;
+}
+.nav-mark {
+  position: absolute;
+  left: 50%;
+  bottom: 2px;
+  width: var(--lozenge-nav);
+  height: var(--lozenge-nav);
+  margin-left: calc(var(--lozenge-nav) / -2);
+  rotate: 45deg;
+  background-color: var(--color-gold-light);
+  opacity: 0;
+  scale: 1.4;
+  transition: opacity var(--dur-quick) var(--ease-silk), scale var(--dur-quick) var(--ease-settle);
+}
+.nav-item:is(:hover, :focus-within) .nav-mark,
+.nav-mark[data-active="true"] {
+  opacity: 1;
+  scale: 1;
+}
+.menu-card {
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path var(--dur-quick) var(--ease-exit),
+    visibility 0s linear var(--dur-quick);
+}
+.menu-card-item {
+  opacity: 0;
+  translate: 0 4px;
+  transition: opacity var(--dur-quick) var(--ease-exit), translate var(--dur-quick) var(--ease-exit), color var(--dur-quick), background-color var(--dur-quick);
+}
+.nav-item:is(:hover, :focus-within) .menu-card {
+  visibility: visible;
+  clip-path: inset(0);
+  transition:
+    clip-path var(--dur-hover) var(--ease-settle) var(--delay-intent),
+    visibility 0s linear var(--delay-intent);
+}
+.nav-item:is(:hover, :focus-within) .menu-card-item {
+  opacity: 1;
+  translate: 0 0;
+  transition:
+    opacity var(--dur-hover) var(--ease-settle) calc(var(--delay-intent) + var(--i, 0) * var(--stagger-item)),
+    translate var(--dur-hover) var(--ease-settle) calc(var(--delay-intent) + var(--i, 0) * var(--stagger-item)),
+    color var(--dur-quick),
+    background-color var(--dur-quick);
+}
+.nav-item:focus-within .menu-card {
+  transition:
+    clip-path var(--dur-hover) var(--ease-settle),
+    visibility 0s linear 0s; /* keyboard: no hover-intent delay */
+}
+.burger-line {
+  display: block;
+  height: var(--hairline);
+  width: 1.75rem;
+  background-color: var(--color-cream);
+  transition:
+    rotate var(--dur-morph) var(--ease-settle) 0ms,
+    translate var(--dur-quick) var(--ease-settle) var(--dur-morph);
+}
+[aria-expanded="true"] > .burger-line {
+  transition:
+    translate var(--dur-quick) var(--ease-settle) 0ms,
+    rotate var(--dur-morph) var(--ease-settle) var(--dur-quick);
+}
+[aria-expanded="true"] > .burger-line:first-child { translate: 0 4px; rotate: 45deg; }
+[aria-expanded="true"] > .burger-line:last-child { translate: 0 -4px; rotate: -45deg; }
+
+/* Mobile menu: a curtain drop */
+.site-menu {
+  visibility: hidden;
+  clip-path: inset(0 0 100% 0);
+  transition:
+    clip-path var(--dur-menu-close) var(--ease-exit),
+    visibility 0s linear var(--dur-menu-close);
+}
+.site-menu[data-open="true"] {
+  visibility: visible;
+  clip-path: inset(0);
+  transition:
+    clip-path var(--dur-menu-open) var(--ease-curtain),
+    visibility 0s linear 0s;
+}
+.site-menu .line-inner {
+  transform: translateY(105%);
+  transition: transform var(--dur-quick) var(--ease-exit);
+}
+.site-menu[data-open="true"] .line-inner {
+  transform: none;
+  transition: transform var(--dur-line) var(--ease-settle) calc(var(--dur-menu-open) * 0.35 + var(--i, 0) * var(--stagger-menu));
+}
+.site-menu .menu-fade {
+  opacity: 0;
+  transition: opacity var(--dur-quick) var(--ease-exit);
+}
+.site-menu[data-open="true"] .menu-fade {
+  opacity: 1;
+  transition: opacity var(--dur-base) var(--ease-silk) calc(var(--dur-menu-open) * 0.35 + var(--i, 0) * var(--stagger-menu) + 150ms);
+}
+.menu-rule {
+  height: 4px;
+  border-bottom: var(--hairline) solid var(--rule);
+  background: radial-gradient(circle, var(--rule-strong) var(--leader-dot), transparent calc(var(--leader-dot) + 0.2px)) 0 0 / var(--leader-gap) 2px repeat-x;
+}
+
+/* ——— Booking ticket cells ——— */
+.cell {
+  position: relative;
+  outline: var(--hairline) solid transparent;
+  outline-offset: -6px;
+  transition: outline-color var(--dur-quick);
+}
+.cell:focus-within {
+  outline-color: var(--focus-ring);
+}
+.cell-input {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  opacity: 0;
+  cursor: pointer;
+  outline-color: transparent; /* the cell draws the ring via :focus-within */
+}
+
+/* ——— Newsletter: the underline foil-draws on focus ——— */
+.underline-draw {
+  background-image: var(--foil);
+  background-repeat: no-repeat;
+  background-position: left bottom;
+  background-size: 0% 2px;
+  transition: background-size var(--dur-hover) var(--ease-settle), border-color var(--dur-quick);
+}
+.underline-draw:focus-within {
+  background-size: 100% 2px;
+}
+
+/* ——— Inquiry type switch: view transitions ——— */
+::view-transition-group(*) {
+  animation-duration: var(--dur-quick);
+  animation-timing-function: var(--ease-settle);
+}
+
+/* ——— Map plate: warms on hover/focus ——— */
+.map-warm {
+  filter: grayscale(0.6) sepia(0.25);
+  transition: filter var(--dur-map) var(--ease-silk);
+}
+:is(.map-plate:hover, .map-plate:focus-within) .map-warm {
+  filter: none;
+}
+
+/* ——— Sticky reserve (mobile) ——— */
+.sticky-reserve {
+  transform: translateY(100%);
+  transition: transform var(--dur-quick) var(--ease-exit);
+  padding-bottom: env(safe-area-inset-bottom);
+}
+.sticky-reserve[data-show="true"] {
+  transform: none;
+  transition: transform var(--dur-base) var(--ease-settle);
+}
+
+/* ——— Reduced motion: final states, no travel ——— */
+@media (prefers-reduced-motion: reduce) {
+  :root,
+  .tempo-calm {
+    --reveal-distance: 0px;
+    --rise-distance: 0px;
+    --dur-reveal: 250ms;
+    --dur-line: 1ms;
+    --dur-curtain: 1ms;
+    --dur-draw: 1ms;
+    --dur-stamp: 1ms;
+    --dur-sheen: 1ms;
+    --dur-menu-open: 1ms;
+    --dur-menu-close: 1ms;
+    --dur-morph: 1ms;
+    --stagger: 0ms;
+    --stagger-line: 0ms;
+    --stagger-menu: 0ms;
+    --stagger-item: 0ms;
+    --dur-kenburns: 0s;
+    --seq-title: 0ms;
+    --seq-media: 0ms;
+    --seq-ornament: 0ms;
+    --seq-lead: 0ms;
+    --seq-actions: 0ms;
+  }
+  /* numeric page staggers (Reveal delay, Photo delay) collapse too, so nothing waits to appear */
+  .reveal {
+    --reveal-delay: 0ms !important;
+  }
+  .photo {
+    --photo-delay: 0ms !important;
+  }
+  .drift,
+  .drift-y,
+  .foil,
+  [data-sheen],
+  .candlelight,
+  .spine-fill,
+  .spine-node,
+  .rail-thread::after,
+  .stamp-in,
+  .stamp-on-mount,
+  .crest,
+  .draw-ring,
+  .orn-rule,
+  .orn-mark,
+  .lines-intro .line-inner,
+  .intro-eyebrow,
+  .intro-lead,
+  .intro-bar,
+  .intro-header,
+  .intro-fade,
+  .intro-sheen,
+  .frame-edge,
+  .frame-corner,
+  .hero-depth-img,
+  .hero-depth-copy,
+  .spin-slow,
+  .animate-slow-zoom,
+  .btn-foil::after {
+    animation: none !important;
+  }
+  .candlelight {
+    --glow: 130%;
+  }
+  .spin-slow,
+  .animate-slow-zoom {
+    transform: none;
+  }
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
